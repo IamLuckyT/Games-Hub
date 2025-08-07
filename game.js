@@ -161,6 +161,52 @@ function update() {
 
     moveAI();
 }
+// Update difficulty level based on player's score
+// This function is called when the player scores to increase difficulty
+// It checks the player's score and updates the difficulty level accordingly
+// Called once when player scores to update difficulty
+function updateDifficulty() {
+    const newLevel = Math.min(maxDifficultyLevel, Math.floor(player.score / pointsPerLevel) + 1);
+    if (newLevel !== difficultyLevel) {
+        difficultyLevel = newLevel;
+        // Update ball speed according to new difficulty
+        ball.speed = 5 + (difficultyLevel - 1) * 0.7;
+        resetBallVelocity();
+        console.log(`Difficulty increased to level ${difficultyLevel}`);
+    }
+}
+
+// Reset ball velocity based on current ball speed and random direction
+function resetBallVelocity() {
+    const directionX = Math.random() > 0.5 ? 1 : -1;
+    const directionY = Math.random() > 0.5 ? 1 : -1;
+    ball.velocityX = ball.speed * directionX;
+    ball.velocityY = ball.speed * directionY;
+}
+
+// Reset ball position and velocity after a score
+function resetBall() {
+    ball.x = WIDTH / 2;
+    ball.y = HEIGHT / 2;
+    resetBallVelocity();
+}
+
+// AI paddle movement based on difficulty level only
+function moveAI() {
+    const aiSpeed = 4 + (difficultyLevel - 1) * 0.5; // Speed depends only on difficulty level
+    const center = ai.y + ai.height / 2;
+
+    if (ball.y < center - 10) {
+        ai.y -= aiSpeed;
+    } else if (ball.y > center + 10) {
+        ai.y += aiSpeed;
+    }
+
+    // Clamp AI paddle within canvas
+    if (ai.y < 0) ai.y = 0;
+    if (ai.y + ai.height > HEIGHT) ai.y = HEIGHT - ai.height;
+}
+
 
 // Render game objects and UI
 function render() {
@@ -195,3 +241,4 @@ function gameLoop() {
 // Start the game
 resetBall();
 gameLoop();
+
