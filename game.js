@@ -14,7 +14,8 @@ const player = {
     y: HEIGHT / 2 - PADDLE_HEIGHT / 2,
     width: PADDLE_WIDTH,
     height: PADDLE_HEIGHT,
-    color: '#0ff'
+    color: '#0ff',
+    score: 0
 };
 
 const ai = {
@@ -22,7 +23,8 @@ const ai = {
     y: HEIGHT / 2 - PADDLE_HEIGHT / 2,
     width: PADDLE_WIDTH,
     height: PADDLE_HEIGHT,
-    color: '#ff0'
+    color: '#ff0',
+    score: 0
 };
 
 // Ball
@@ -35,6 +37,11 @@ const ball = {
     velocityY: 5 * (Math.random() > 0.5 ? 1 : -1),
     color: '#fff'
 };
+
+// Difficulty
+let difficultyLevel = 1;
+const pointsPerLevel = 5; // Increase difficulty every 5 points
+const maxDifficultyLevel = 10;
 
 // Utility
 function drawRect(x, y, w, h, color) {
@@ -50,9 +57,9 @@ function drawCircle(x, y, r, color) {
     ctx.fill();
 }
 
-function drawText(text, x, y, color) {
+function drawText(text, x, y, color, fontSize = 40) {
     ctx.fillStyle = color;
-    ctx.font = "bold 40px Arial";
+    ctx.font = `bold ${fontSize}px Arial`;
     ctx.fillText(text, x, y);
 }
 
@@ -69,7 +76,6 @@ canvas.addEventListener('mousemove', function(evt) {
 
 // Collision detection
 function collision(b, p) {
-    // Ball and paddle collision
     return (
         b.x - b.radius < p.x + p.width &&
         b.x + b.radius > p.x &&
@@ -80,24 +86,39 @@ function collision(b, p) {
 
 // AI Movement
 function moveAI() {
-    // Simple AI: move towards the ball
+    // AI speed increases with difficulty
+    const aiSpeed = 4 + (difficultyLevel - 1) * 0.5;
     let center = ai.y + ai.height / 2;
     if (ball.y < center - 10) {
-        ai.y -= 4;
+        ai.y -= aiSpeed;
     } else if (ball.y > center + 10) {
-        ai.y += 4;
+        ai.y += aiSpeed;
     }
     // Clamp within canvas
     if (ai.y < 0) ai.y = 0;
     if (ai.y + ai.height > HEIGHT) ai.y = HEIGHT - ai.height;
 }
 
-// Reset ball to center
+// Reset ball to center and set velocity according to difficulty
 function resetBall() {
     ball.x = WIDTH / 2;
     ball.y = HEIGHT / 2;
-    ball.velocityX = ball.speed * (Math.random() > 0.5 ? 1 : -1);
-    ball.velocityY = ball.speed * (Math.random() > 0.5 ? 1 : -1);
+    ball.speed = 5 + (difficultyLevel - 1) * 0.7; // Increase ball speed with difficulty
+    const directionX = Math.random() > 0.5 ? 1 : -1;
+    const directionY = Math.random() > 0.5 ? 1 : -1;
+    ball.velocityX = ball.speed * directionX;
+    ball.velocityY = ball.speed * directionY;
+}
+
+// Update difficulty based on player's score
+function updateDifficulty() {
+    const newLevel = Math.min(maxDifficultyLevel, Math.floor(player.score / pointsPerLevel) + 1);
+    if (newLevel !== difficultyLevel) {
+        difficultyLevel = newLevel;
+        // Reset ball speed to match new difficulty
+        ball.speed = 5 + (difficultyLevel - 1) * 0.7;
+        console.log(`Difficulty increased to level ${difficultyLevel}`);
+    }
 }
 
 // Update game objects
@@ -114,7 +135,6 @@ function update() {
     if (collision(ball, player)) {
         ball.x = player.x + player.width + ball.radius;
         ball.velocityX = -ball.velocityX;
-        // Add some randomness to ball's Y velocity
         let collidePoint = (ball.y - (player.y + player.height / 2)) / (player.height / 2);
         ball.velocityY = ball.speed * collidePoint;
     }
@@ -127,15 +147,22 @@ function update() {
         ball.velocityY = ball.speed * collidePoint;
     }
 
-    // Left/right wall collision (score)
-    if (ball.x - ball.radius < 0 || ball.x + ball.radius > WIDTH) {
+    // Left/right wall collision (score update)
+    if (ball.x - ball.radius < 0) {
+        // AI scores
+        ai.score++;
+        resetBall();
+    } else if (ball.x + ball.radius > WIDTH) {
+        // Player scores
+        player.score++;
+        updateDifficulty();
         resetBall();
     }
 
     moveAI();
 }
 
-// Render game objects
+// Render game objects and UI
 function render() {
     // Clear
     drawRect(0, 0, WIDTH, HEIGHT, "#000");
@@ -149,6 +176,13 @@ function render() {
     drawRect(player.x, player.y, player.width, player.height, player.color);
     drawRect(ai.x, ai.y, ai.width, ai.height, ai.color);
     drawCircle(ball.x, ball.y, ball.radius, ball.color);
+
+    // Draw scores
+    drawText(player.score, WIDTH / 4, 50, '#0ff');
+    drawText(ai.score, 3 * WIDTH / 4, 50, '#ff0');
+
+    // Draw difficulty level
+    drawText(`Level: ${difficultyLevel}`, WIDTH / 2 - 60, HEIGHT - 30, '#fff', 24);
 }
 
 // Game loop
@@ -158,5 +192,6 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Start
+// Start the game
+resetBall();
 gameLoop();
