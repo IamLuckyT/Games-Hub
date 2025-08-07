@@ -1,24 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hub</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Games Hub - Home</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b1224;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        header {
+            margin-bottom: 2rem;
+        }
+        header img {
+            width: 180px;
+            max-width: 90vw;
+            height: auto;
+            filter: drop-shadow(0 0 5px #3af);
+        }
+        h1 {
+            font-size: 3rem;
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #00d8ff;
+            text-shadow: 0 0 10px #00d8ffaa;
+        }
+        p {
+            font-size: 1.25rem;
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #c0c8d8;
+        }
+        footer {
+            position: fixed;
+            bottom: 10px;
+            font-size: 0.9rem;
+            color: #444c66;
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+        }
+    </style>
 </head>
-
 <body>
-    <p>Welcome to the Games Hub</p>
-
-    <ul>
-        <li><a href="/games/2048">2048</a></li>
-        <li><a href="/games/tic-tac-toe">Tic Tac Toe</a></li>
-        <li><a href="/games/snake">Snake</a></li>
-        <li><a href="/games/space-invaders">Space Invaders</a></li>
-        <li><a href="/games/pong">Pong</a></li>
-        <li><a href="/games/asteroids">Asteroids</a></li>
-        <li><a href="/games/flappy-bird">Flappy Bird</a></li>
-        <li><a href="/games/memory-game">Memory Game</a></li>
-        <li><a href="/games/brick-breaker">Brick Breaker</a></li>
+    <header>
+        <img src="images/GH_logo.png" alt="Games Hub Logo" />
+        <h1>Welcome to Games Hub</h1>
+    </header>
+    <main>
+        <p>Your ultimate destination to play, create, and share amazing games. Dive into the world of gaming with us!</p>
+    </main>
+    <footer>
+        &copy; 2025 Games Hub. All rights reserved.
+    </footer>
 </body>
 </html>
-
