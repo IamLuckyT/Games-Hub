@@ -10,12 +10,12 @@ const BALL_RADIUS = 12;
 
 // Paddles
 const player = {
-    x: 0 + 6,
-    y: HEIGHT / 2 - PADDLE_HEIGHT / 2,
-    width: PADDLE_WIDTH,
-    height: PADDLE_HEIGHT,
-    color: '#0ff',
-    score: 0
+    x: 0 + 6,                                                               // Player paddle starts 6px from the left edge
+    y: HEIGHT / 2 - PADDLE_HEIGHT / 2,                                      // Center the player paddle vertically
+    width: PADDLE_WIDTH,                                                    // Paddle width
+    height: PADDLE_HEIGHT,                                                  // Paddle height        
+    color: '#0ff',                                                        // Paddle color     
+    score: 0                                                                // Player score
 };
 
 const ai = {
@@ -40,7 +40,7 @@ const ball = {
 
 // Difficulty
 let difficultyLevel = 1;
-const pointsPerLevel = 5; // Increase difficulty every 5 points
+const pointsPerLevel = 5;                                               // Increase difficulty every 5 points
 const maxDifficultyLevel = 10;
 
 // Utility
@@ -92,7 +92,6 @@ function handleTouchMove(evt) {
     if (player.y < 0) player.y = 0;
     if (player.y + player.height > HEIGHT) player.y = HEIGHT - player.height;
 }
-
 
 // Collision detection
 function collision(b, p) {
@@ -226,7 +225,21 @@ function moveAI() {
     if (ai.y < 0) ai.y = 0;
     if (ai.y + ai.height > HEIGHT) ai.y = HEIGHT - ai.height;
 }
+// AI paddle movement based on difficulty level only
+function moveAI() {
+    const aiSpeed = 4 + (difficultyLevel - 1) * 0.5; // Speed depends only on difficulty level
+    const center = ai.y + ai.height / 2;
 
+    if (ball.y < center - 10) {
+        ai.y -= aiSpeed;
+    } else if (ball.y > center + 10) {
+        ai.y += aiSpeed;
+    }
+
+    // Clamp AI paddle within canvas
+    if (ai.y < 0) ai.y = 0;
+    if (ai.y + ai.height > HEIGHT) ai.y = HEIGHT - ai.height;
+}   
 
 // Render game objects and UI
 function render() {
