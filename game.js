@@ -74,6 +74,26 @@ canvas.addEventListener('mousemove', function(evt) {
     if (player.y + player.height > HEIGHT) player.y = HEIGHT - player.height;
 });
 
+// Touch control for player paddle
+canvas.addEventListener('touchstart', handleTouchMove, { passive: false });
+canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+function handleTouchMove(evt) {
+    evt.preventDefault(); // Prevent scrolling when touching the canvas
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = evt.touches[0]; // Get the first touch point
+
+    // Calculate touch Y relative to canvas top
+    let touchY = touch.clientY - rect.top;
+
+    // Center paddle on touch Y and clamp inside canvas
+    player.y = touchY - player.height / 2;
+    if (player.y < 0) player.y = 0;
+    if (player.y + player.height > HEIGHT) player.y = HEIGHT - player.height;
+}
+
+
 // Collision detection
 function collision(b, p) {
     return (
