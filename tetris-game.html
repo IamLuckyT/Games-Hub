@@ -148,13 +148,14 @@
       document.getElementById('highscore').textContent = 'High: ' + (highscore || 0);
     }
 
-    function drawBlock(ctx, x, y, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE-1, BLOCK_SIZE-1);
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE-1, BLOCK_SIZE-1);
-    }
+function drawBlock(ctx, x, y, color) {
+  const size = window.BLOCK_SIZE || BLOCK_SIZE;
+  ctx.fillStyle = color;
+  ctx.fillRect(x*size, y*size, size-1, size-1);
+  ctx.strokeStyle = "#222";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x*size, y*size, size-1, size-1);
+}
 
     function draw() {
       const canvas = document.getElementById('game-board');
