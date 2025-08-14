@@ -71,6 +71,21 @@
     .control-btn:active {
       background: #555;
     }
+    #btn-start {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      background: #00bfff;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 10px #0004;
+      transition: background 0.2s;
+    }
+    #btn-start:hover {
+      background: #0099cc;
+    }
     @media (max-width: 500px) {
       #game-board { width: 90vw !important; height: 160vw !important; max-width: 99vw; }
       #info-bar { max-width: 98vw; font-size: 0.9rem; }
@@ -93,9 +108,10 @@
       <button class="control-btn" id="btn-drop" aria-label="Drop">&#8681;</button>
       <button class="control-btn" id="btn-pause" aria-label="Pause">&#10073;&#10073;</button>
     </div>
+    <!-- Start/Restart Button -->
+    <button id="btn-start">Start Game</button>
   </div>
   <script>
-    // --- Tetris Game Logic ---
     const COLS = 10, ROWS = 20, BLOCK_SIZE = 30;
     const LEVEL_SPEED = [800, 700, 600, 500, 400, 300, 220, 160, 100, 60, 40];
     const SCORE_PER_LINE = [0, 100, 300, 500, 800];
@@ -260,7 +276,6 @@
       updateInfo();
     }
 
-    // --- Fixed loop using requestAnimationFrame ---
     function loop(time = 0) {
       if (paused || gameover) return;
       const delta = time - lastTime;
@@ -312,6 +327,9 @@
     document.getElementById('btn-drop').onclick = () => { drop(); };
     document.getElementById('btn-pause').onclick = () => { pauseGame(); };
 
+    // Start/Restart button
+    document.getElementById('btn-start').onclick = () => { resetGame(); };
+
     // Keyboard
     document.addEventListener('keydown', handleKey);
 
@@ -319,11 +337,6 @@
     window.addEventListener('resize', fitCanvas);
 
     fitCanvas();
-    resetGame();
-
-    document.getElementById('game-board').addEventListener('dblclick', () => {
-      if(gameover) resetGame();
-    });
   </script>
 </body>
 </html>
