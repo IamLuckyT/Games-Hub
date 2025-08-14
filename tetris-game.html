@@ -96,23 +96,22 @@
   </div>
   <script>
     // --- Tetris Game Logic ---
-    // Config
     const COLS = 10, ROWS = 20, BLOCK_SIZE = 30;
     const LEVEL_SPEED = [800, 700, 600, 500, 400, 300, 220, 160, 100, 60, 40];
     const SCORE_PER_LINE = [0, 100, 300, 500, 800];
     const SHAPES = [
-      // [Tetromino, color]
       [[[1,1,1,1]], "#00bfff"], // I
       [[[1,1],[1,1]], "#ffd700"], // O
       [[[0,1,0],[1,1,1]], "#da70d6"], // T
       [[[0,1,1],[1,1,0]], "#7cfc00"], // S
       [[[1,1,0],[0,1,1]], "#ff4500"], // Z
       [[[1,0,0],[1,1,1]], "#ff69b4"], // J
-      [[[0,0,1],[1,1,1]], "#8a2be2"] // L
+      [[[0,0,1],[1,1,1]], "#8a2be2"]  // L
     ];
 
-    // State
-    let board, current, next, pos, score, lines, level, highscore, dropInterval, dropTimer, paused, gameover;
+    let board, current, next, pos, score, lines, level, highscore;
+    let paused, gameover, dropInterval;
+    let lastTime = 0;
 
     function resetBoard() {
       board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
@@ -139,7 +138,8 @@
       gameover = false;
       dropInterval = LEVEL_SPEED[0];
       updateInfo();
-      loop();
+      lastTime = 0;
+      requestAnimationFrame(loop);
     }
 
     function updateInfo() {
@@ -148,25 +148,23 @@
       document.getElementById('highscore').textContent = 'High: ' + (highscore || 0);
     }
 
-function drawBlock(ctx, x, y, color) {
-  const size = window.BLOCK_SIZE || BLOCK_SIZE;
-  ctx.fillStyle = color;
-  ctx.fillRect(x*size, y*size, size-1, size-1);
-  ctx.strokeStyle = "#222";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x*size, y*size, size-1, size-1);
-}
+    function drawBlock(ctx, x, y, color) {
+      const size = window.BLOCK_SIZE || BLOCK_SIZE;
+      ctx.fillStyle = color;
+      ctx.fillRect(x*size, y*size, size-1, size-1);
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x*size, y*size, size-1, size-1);
+    }
 
     function draw() {
       const canvas = document.getElementById('game-board');
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0,0,canvas.width,canvas.height);
-      // Board
       for(let y=0; y<ROWS; ++y)
         for(let x=0; x<COLS; ++x)
           if(board[y][x])
             drawBlock(ctx, x, y, board[y][x]);
-      // Current piece
       if(current)
         current.shape.forEach((row, dy) =>
           row.forEach((val, dx) => {
@@ -220,7 +218,6 @@ function drawBlock(ctx, x, y, color) {
 
     function rotate() {
       const s = current.shape;
-      // Transpose + reverse rows: 90deg CW
       const rotated = s[0].map((_,i) => s.map(row => row[i]).reverse());
       if(valid(0,0,rotated))
         current.shape = rotated;
@@ -261,18 +258,23 @@ function drawBlock(ctx, x, y, color) {
         pos = {x: 3, y: 0};
       }
       updateInfo();
-      draw();
     }
 
-    function loop() {
-      if(paused || gameover) return;
-      tick();
-      dropTimer = setTimeout(loop, dropInterval);
+    // --- Fixed loop using requestAnimationFrame ---
+    function loop(time = 0) {
+      if (paused || gameover) return;
+      const delta = time - lastTime;
+      if (delta > dropInterval) {
+        tick();
+        lastTime = time;
+      }
+      draw();
+      requestAnimationFrame(loop);
     }
 
     function pauseGame() {
       paused = !paused;
-      if(!paused) loop();
+      if(!paused) requestAnimationFrame(loop);
     }
 
     function handleKey(e) {
@@ -290,11 +292,8 @@ function drawBlock(ctx, x, y, color) {
       draw();
     }
 
-    // --- Setup ---
     function fitCanvas() {
-      const container = document.getElementById('tetris-container');
       const canvas = document.getElementById('game-board');
-      // Responsive fit: max 90vw, 90vh
       const maxWidth = Math.min(window.innerWidth * 0.98, 400);
       const maxHeight = Math.min(window.innerHeight * 0.80, 800);
       let size = Math.min(maxWidth/COLS, maxHeight/ROWS);
@@ -313,46 +312,15 @@ function drawBlock(ctx, x, y, color) {
     document.getElementById('btn-drop').onclick = () => { drop(); };
     document.getElementById('btn-pause').onclick = () => { pauseGame(); };
 
-    // Touch swipe for mobile
-    let touchStart = null;
-    document.getElementById('game-board').addEventListener('touchstart', (e) => {
-      if(gameover) return;
-      touchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY, t: +new Date()};
-    });
-    document.getElementById('game-board').addEventListener('touchend', (e) => {
-      if(!touchStart) return;
-      const dx = e.changedTouches[0].clientX - touchStart.x;
-      const dy = e.changedTouches[0].clientY - touchStart.y;
-      if(Math.abs(dx) > Math.abs(dy)) {
-        if(dx < -16) move(-1,0);
-        else if(dx > 16) move(1,0);
-      } else {
-        if(dy > 18) move(0,1);
-        else if(dy < -18) rotate();
-      }
-      draw();
-      touchStart = null;
-    });
-    document.getElementById('game-board').addEventListener('click', (e) => {
-      // Mouse tap = rotate
-      if(gameover) return;
-      rotate(); draw();
-    });
-
     // Keyboard
     document.addEventListener('keydown', handleKey);
 
-    // Highscore
     highscore = Number(localStorage.getItem('tetris-high')) || 0;
-
-    // Responsive
     window.addEventListener('resize', fitCanvas);
 
-    // Start
     fitCanvas();
     resetGame();
 
-    // Restart on gameover tap
     document.getElementById('game-board').addEventListener('dblclick', () => {
       if(gameover) resetGame();
     });
