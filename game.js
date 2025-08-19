@@ -7,6 +7,7 @@ const HEIGHT = canvas.height;
 const PADDLE_WIDTH = 12;
 const PADDLE_HEIGHT = 100;
 const BALL_RADIUS = 12;
+let paused = false;
 
 // Paddles
 const player = {
@@ -91,6 +92,11 @@ function handleTouchMove(evt) {
     player.y = touchY - player.height / 2;
     if (player.y < 0) player.y = 0;
     if (player.y + player.height > HEIGHT) player.y = HEIGHT - player.height;
+}
+
+function pauseGame() {
+      paused = !paused;
+      if(!paused) requestAnimationFrame(loop);
 }
 
 // Collision detection
@@ -270,6 +276,13 @@ function gameLoop() {
     render();
     requestAnimationFrame(gameLoop);
 }
+
+// Event listener for pause functionality
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'p' || event.key === 'P') {
+        pauseGame();
+    }
+}); 
 
 // Start the game
 resetBall();
