@@ -130,117 +130,118 @@
     let lastTime = 0;
 
     function resetBoard() {
-      board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+      board = Array.from({length: ROWS}, () => Array(COLS).fill(0));                              // Initialize the game board
     }
 
     function newPiece() {
-      const id = Math.floor(Math.random() * SHAPES.length);
+      const id = Math.floor(Math.random() * SHAPES.length);                                       // Randomly select a shape
       return { 
-        id: id, 
-        shape: SHAPES[id][0].map(row => [...row]), 
-        color: SHAPES[id][1]
+        id: id,                                                                                   // Store the shape ID
+        shape: SHAPES[id][0].map(row => [...row]),                                                // Clone the shape array
+        color: SHAPES[id][1]                                                                      // Get the color associated with the shape
       };
     }
 
     function resetGame() {
-      resetBoard();
-      current = newPiece();
-      next = newPiece();
-      pos = {x: 3, y: 0};
-      score = 0;
-      lines = 0;
-      level = 1;
-      paused = false;
-      gameover = false;
-      dropInterval = LEVEL_SPEED[0];
-      updateInfo();
-      lastTime = 0;
-      requestAnimationFrame(loop);
+      resetBoard();                                                                               // Reset the game board
+      current = newPiece();                                                                       // Create a new piece
+      next = newPiece();                                                                          // Create the next piece
+      pos = {x: 3, y: 0};                                                                         // Set the initial position of the current piece
+      score = 0;                                                                                  // Reset the score
+      lines = 0;                                                                                  // Reset the number of cleared lines
+      level = 1;                                                                                  // Reset the level
+      paused = false;                                                                             // Reset the paused state                   
+      gameover = false;                                                                           // Reset the game over state  
+      dropInterval = LEVEL_SPEED[0];                                                              // Set the initial drop interval based on the level
+      updateInfo();                                                                               // Update the displayed information 
+      lastTime = 0;                                                                               // Reset the last time for the game loop
+      requestAnimationFrame(loop);                                                                // Start the game loop
+      draw();                                                                                     // Draw the initial game state
     }
 
     function updateInfo() {
-      document.getElementById('score').textContent = 'Score: ' + score;
-      document.getElementById('level').textContent = 'Level: ' + level;
-      document.getElementById('highscore').textContent = 'High: ' + (highscore || 0);
+      document.getElementById('score').textContent = 'Score: ' + score;                           // Update the score display 
+      document.getElementById('level').textContent = 'Level: ' + level;                           // Update the level display
+      document.getElementById('highscore').textContent = 'High: ' + (highscore || 0);             // Update the high score display
     }
 
     function drawBlock(ctx, x, y, color) {
-      const size = window.BLOCK_SIZE || BLOCK_SIZE;
-      ctx.fillStyle = color;
-      ctx.fillRect(x*size, y*size, size-1, size-1);
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x*size, y*size, size-1, size-1);
+      const size = window.BLOCK_SIZE || BLOCK_SIZE;                                               // Use the global BLOCK_SIZE or default to 30
+      ctx.fillStyle = color;                                                                      // Set the fill color for the block 
+      ctx.fillRect(x*size, y*size, size-1, size-1);                                               // Draw the block on the canvas
+      ctx.strokeStyle = "#222";                                                                   // Set the stroke color for the block border
+      ctx.lineWidth = 2;                                                                          // Set the line width for the border  
+      ctx.strokeRect(x*size, y*size, size-1, size-1);                                             // Draw the border around the block
     }
 
     function draw() {
-      const canvas = document.getElementById('game-board');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(let y=0; y<ROWS; ++y)
-        for(let x=0; x<COLS; ++x)
-          if(board[y][x])
-            drawBlock(ctx, x, y, board[y][x]);
+      const canvas = document.getElementById('game-board');                                       // Get the canvas element
+      const ctx = canvas.getContext('2d');                                                        // Get the 2D rendering context
+      ctx.clearRect(0,0,canvas.width,canvas.height);                                              // Clear the canvas
+      for(let y=0; y<ROWS; ++y)                                                                    
+        for(let x=0; x<COLS; ++x)                                                                 
+          if(board[y][x])                                                                         // If the cell is occupied, draw the block
+            drawBlock(ctx, x, y, board[y][x]);                                                    
       if(current)
-        current.shape.forEach((row, dy) =>
-          row.forEach((val, dx) => {
-            if(val) drawBlock(ctx, pos.x+dx, pos.y+dy, current.color);
+        current.shape.forEach((row, dy) =>                                                        // Draw the current piece
+          row.forEach((val, dx) => {                                                              // For each block in the piece
+            if(val) drawBlock(ctx, pos.x+dx, pos.y+dy, current.color);                            // Draw each block of the current piece
           })
         );
     }
 
-    function valid(offsetX=0, offsetY=0, newShape=null) {
-      const {shape} = current;
-      const s = newShape || shape;
-      for(let y=0; y<s.length; ++y)
-        for(let x=0; x<s[y].length; ++x)
-          if(s[y][x]) {
-            let nx = pos.x + x + offsetX;
-            let ny = pos.y + y + offsetY;
-            if(nx<0 || nx>=COLS || ny<0 || ny>=ROWS) return false;
-            if(board[ny][nx]) return false;
+    function valid(offsetX=0, offsetY=0, newShape=null) {                                         
+      const {shape} = current;                                                                    // Get the shape of the current piece
+      const s = newShape || shape;                                                                // Use the new shape if provided, otherwise use the current shape 
+      for(let y=0; y<s.length; ++y)                                                               
+        for(let x=0; x<s[y].length; ++x)                                                          // Iterate through each block in the shape
+          if(s[y][x]) {                                                                           // If the block is occupied
+            let nx = pos.x + x + offsetX;                                                         // Calculate the new x position
+            let ny = pos.y + y + offsetY;                                                         // Calculate the new y position
+            if(nx<0 || nx>=COLS || ny<0 || ny>=ROWS) return false;                                // Check if the new position is out of bounds
+            if(board[ny][nx]) return false;                                                       // Check if the new position collides with an existing block on the board
           }
       return true;
     }
 
-    function merge() {
-      current.shape.forEach((row, dy) =>
-        row.forEach((val, dx) => {
-          if(val) board[pos.y+dy][pos.x+dx] = current.color;
+    function merge() {                                                                            
+      current.shape.forEach((row, dy) =>                                                           
+        row.forEach((val, dx) => {                                                                // For each block in the current piece  
+          if(val) board[pos.y+dy][pos.x+dx] = current.color;                                      // Merge the current piece into the board
         })
       );
     }
 
-    function clearLines() {
-      let count = 0;
-      for(let y=ROWS-1; y>=0; --y) {
-        if(board[y].every(cell => cell)) {
-          board.splice(y, 1);
-          board.unshift(Array(COLS).fill(0));
-          count++;
-          y++;
+    function clearLines() {                                                                       
+      let count = 0;                                                                               
+      for(let y=ROWS-1; y>=0; --y) {                                                              // Check each row from the bottom up
+        if(board[y].every(cell => cell)) {                                                        // If the row is completely filled
+          board.splice(y, 1);                                                                     // Remove the filled row        
+          board.unshift(Array(COLS).fill(0));                                                     // Add a new empty row at the top
+          count++;                                                                                
+          y++;                                                                                    // Adjust the index to account for the removed row
         }
       }
       if(count > 0) {
-        score += SCORE_PER_LINE[count]*(level);
-        lines += count;
-        let newLevel = 1 + Math.floor(lines/10);
-        if(newLevel > level) {
-          level = newLevel;
-          dropInterval = LEVEL_SPEED[Math.min(level-1, LEVEL_SPEED.length-1)];
+        score += SCORE_PER_LINE[count]*(level);                                                   // Update the score based on the number of lines cleared and the current level
+        lines += count;                                                                           // Update the total number of lines cleared
+        let newLevel = 1 + Math.floor(lines/10);                                                  // Calculate the new level based on the number of lines cleared
+        if(newLevel > level) {                                                                    
+          level = newLevel;                                                                       // Update the level if it has increased 
+          dropInterval = LEVEL_SPEED[Math.min(level-1, LEVEL_SPEED.length-1)];                    // Update the drop interval based on the new level
         }
       }
     }
 
     function rotate() {
-      const s = current.shape;
-      const rotated = s[0].map((_,i) => s.map(row => row[i]).reverse());
-      if(valid(0,0,rotated))
-        current.shape = rotated;
+      const s = current.shape;                                                                     
+      const rotated = s[0].map((_,i) => s.map(row => row[i]).reverse());                          // Rotate the shape 90 degrees clockwise
+      if(valid(0,0,rotated))                                                                      
+        current.shape = rotated;                                                                  // Update the current shape if the rotation is valid
     }
 
-    function move(dx, dy) {
-      if(valid(dx, dy)) {
+    function move(dx, dy) {                                                                       
+      if(valid(dx, dy)) {                                                                         
         pos.x += dx;
         pos.y += dy;
         draw();
