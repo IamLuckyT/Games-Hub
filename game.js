@@ -278,11 +278,14 @@ function gameLoop() {
 }
 
 // Event listener for pause functionality
+document.getElementById('btn-pause').onclick = () => { pauseGame(); };
+// Pause the game when 'p' key is pressed
 document.addEventListener('keydown', function(event) {
     if (event.key === 'p' || event.key === 'P') {
         pauseGame();
     }
 }); 
+    
 
 // Start the game
 resetBall();
