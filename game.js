@@ -7,7 +7,7 @@ const HEIGHT = canvas.height;
 const PADDLE_WIDTH = 12;
 const PADDLE_HEIGHT = 100;
 const BALL_RADIUS = 12;
-let paused = false;
+//let paused = false;
 
 // Paddles
 const player = {
